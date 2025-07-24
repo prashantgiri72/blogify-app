@@ -12,6 +12,13 @@
         <div class="col-md-8 mx-auto">
             <img src="<%= blog.coverImageURL %>" width="100%" class="rounded-3 shadow-sm mb-4" />
             <h1><%= blog.title %></h1>
+
+            <% if (blog.summary) { %>
+              <p class="lead fst-italic bg-light p-3 rounded-3 shadow-sm border-start border-primary border-5 my-4">
+                <%= blog.summary %>
+              </p>
+            <% } %>
+
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center text-muted mb-4">
                 <div class="mb-2 mb-sm-0">
                     <img src="<%= blog.createdBy.profileImageURL %>" width="40" class="rounded-circle" />
@@ -108,25 +115,20 @@
 
     <%- include('./partials/footer.ejs') %>
     <%- include('./partials/script.ejs') %>
-
     <script>
         const likeButton = document.getElementById('like-button');
         const likeCountSpan = document.getElementById('like-count');
         const likeIcon = likeButton ? likeButton.querySelector('i') : null;
-
         if(likeButton) {
             likeButton.addEventListener('click', async (e) => {
-                e.preventDefault(); // Stop the link from navigating
-
+                e.preventDefault();
                 try {
                     const response = await fetch(likeButton.href);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const result = await response.json();
-
                     likeCountSpan.innerText = result.likes;
-                    
                     if (result.isLiked) {
                         likeButton.classList.remove('btn-outline-danger');
                         likeButton.classList.add('btn-danger');

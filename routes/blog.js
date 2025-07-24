@@ -33,7 +33,6 @@ router.post("/comment/:blogId", restrictToLoggedInUserOnly, async (req, res) => 
 
 router.post("/", restrictToLoggedInUserOnly, upload.single("coverImage"), async (req, res) => {
   const { title, body } = req.body;
-
   const wordCount = body.trim().split(/\s+/).length;
   const averageWPM = 200;
   const timeToRead = Math.ceil(wordCount / averageWPM);
@@ -50,41 +49,22 @@ router.post("/", restrictToLoggedInUserOnly, upload.single("coverImage"), async 
 
 router.post("/delete/:id", restrictToLoggedInUserOnly, async (req, res) => {
   const blog = await Blog.findById(req.params.id);
-
   if (blog && req.user && blog.createdBy.toString() === req.user._id) {
     await Blog.findByIdAndDelete(req.params.id);
     await Comment.deleteMany({ blogId: req.params.id });
   }
-  
   return res.redirect("/");
 });
 
-// ADD THIS NEW ROUTE FOR LIKES
 router.get("/like/:blogId", restrictToLoggedInUserOnly, async (req, res) => {
-  const blog = await Blog.findById(req.params.blogId);
-  
-  if (!blog) {
-    return res.status(404).json({ error: "Blog not found" });
-  }
-
-  const userId = req.user._id;
-  const userLikeIndex = blog.likes.indexOf(userId);
-
-  if (userLikeIndex === -1) {
-    // User has not liked yet, so add the like
-    blog.likes.push(userId);
-  } else {
-    // User has already liked, so remove the like
-    blog.likes.splice(userLikeIndex, 1);
-  }
-
-  await blog.save();
-  
-  // Send back the updated like count and status
-  return res.json({
-    likes: blog.likes.length,
-    isLiked: userLikeIndex === -1,
-  });
+    const blog = await Blog.findById(req.params.blogId);
+    if (!blog) return res.status(404).json({ error: "Blog not found" });
+    const userId = req.user._id;
+    const userLikeIndex = blog.likes.indexOf(userId);
+    if (userLikeIndex === -1) blog.likes.push(userId);
+    else blog.likes.splice(userLikeIndex, 1);
+    await blog.save();
+    return res.json({ likes: blog.likes.length, isLiked: userLikeIndex === -1 });
 });
 
 module.exports = router;
