@@ -17,6 +17,11 @@ const blogSchema = new Schema(
     readingTime: {
       type: String,
     },
+    // ADD THIS NEW FIELD
+    likes: [{
+      type: Schema.Types.ObjectId,
+      ref: "user",
+    }],
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "user",
