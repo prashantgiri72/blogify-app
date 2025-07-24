@@ -16,6 +16,16 @@ function checkForAuthenticationCookie(cookieName) {
   };
 }
 
+// YEH NAYA MIDDLEWARE ADD HUA HAI
+function restrictToLoggedInUserOnly(req, res, next) {
+    if (!req.user) {
+        return res.redirect("/user/signin");
+    }
+    next();
+}
+
+
 module.exports = {
   checkForAuthenticationCookie,
+  restrictToLoggedInUserOnly, // Naye function ko export karein
 };

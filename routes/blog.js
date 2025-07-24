@@ -2,16 +2,18 @@ const { Router } = require("express");
 const upload = require("../services/cloudinary");
 const Blog = require("../models/blog");
 const Comment = require("../models/comment");
+const { restrictToLoggedInUserOnly } = require("../middlewares/authentication"); // Naye middleware ko import karein
 
 const router = Router();
 
-router.get("/add-new", (req, res) => {
+router.get("/add-new", restrictToLoggedInUserOnly, (req, res) => { // Is route ko bhi protect kar diya
   return res.render("addBlog", {
     user: req.user,
   });
 });
 
-router.get("/:id", async (req, res) => {
+// YAHAN PAR NAYA MIDDLEWARE ADD HUA HAI
+router.get("/:id", restrictToLoggedInUserOnly, async (req, res) => {
   const blog = await Blog.findById(req.params.id).populate("createdBy");
   const comments = await Comment.find({ blogId: req.params.id }).populate(
     "createdBy"
@@ -23,7 +25,7 @@ router.get("/:id", async (req, res) => {
   });
 });
 
-router.post("/comment/:blogId", async (req, res) => {
+router.post("/comment/:blogId", restrictToLoggedInUserOnly, async (req, res) => { // Is route ko bhi protect kar diya
   await Comment.create({
     content: req.body.content,
     blogId: req.params.blogId,
@@ -32,7 +34,7 @@ router.post("/comment/:blogId", async (req, res) => {
   return res.redirect(`/blog/${req.params.blogId}`);
 });
 
-router.post("/", upload.single("coverImage"), async (req, res) => {
+router.post("/", restrictToLoggedInUserOnly, upload.single("coverImage"), async (req, res) => { // Is route ko bhi protect kar diya
   const { title, body } = req.body;
 
   const wordCount = body.trim().split(/\s+/).length;
@@ -49,7 +51,7 @@ router.post("/", upload.single("coverImage"), async (req, res) => {
   return res.redirect(`/blog/${blog._id}`);
 });
 
-router.post("/delete/:id", async (req, res) => {
+router.post("/delete/:id", restrictToLoggedInUserOnly, async (req, res) => { // Is route ko bhi protect kar diya
   const blog = await Blog.findById(req.params.id);
 
   if (blog && req.user && blog.createdBy.toString() === req.user._id) {
